@@ -1,7 +1,7 @@
 import projectBlueGame from './ProjectBlueGame';
-import InitialScene from './scenes/InitialScene';
+import BootScene from './scenes/BootScene';
 
-const scene = projectBlueGame.scene.keys.Initial as InitialScene;
+const scene = projectBlueGame.scene.keys.Boot as BootScene;
 function App() {
   return <div className="App" onLoad={()=>scene.create()}></div>;
 }

@@ -1,1 +1,1 @@
-export * from './InitialScene';
+export * from './BootScene';
