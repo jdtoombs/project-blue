@@ -6,6 +6,7 @@ export default class BootScene extends Scene {
   }
   preload() {
     this.load.aseprite({ key: 'blu', textureURL: '/assets/blu.png', atlasURL: '/assets/blu.json' });
+    this.load.image('rod-1', '/assets/rod-1.png');
   }
 
   create() {
