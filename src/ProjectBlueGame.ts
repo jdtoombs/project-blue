@@ -5,6 +5,7 @@ import BootScene from './scenes/BootScene';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
+  // TODO: Create better site layout and Game component to render the canvas in
   parent: 'phaser-container',
   backgroundColor: '#282c34',
   scale: {

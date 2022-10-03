@@ -10,7 +10,7 @@ export default class GameScene extends Scene {
     super({ key: 'Game' });
   }
 
-  //TODO: Organize this with best practices later  
+  //TODO: Organize this with best practices later
   create() {
     const map = this.add.tilemap('tilemap');
     const tileset = map.addTilesetImage('standard_tiles', 'base_tiles');
@@ -19,11 +19,10 @@ export default class GameScene extends Scene {
     this.player = this.physics.add.sprite(250, 600, 'blu');
     this.player.setBounce(0.2);
     this.player.setCollideWorldBounds(true);
-    this.player.play({ key: 'idle', repeat: -1 });
 
     this.rod = this.physics.add.sprite(200, 200, 'rod-1');
     this.rod.setCollideWorldBounds(true);
-   
+
     this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
     this.cameras.main.startFollow(this.player);
     this.cameras.main.zoom = 4;
@@ -55,9 +54,11 @@ export default class GameScene extends Scene {
     }
 
     /** Item Tracking */
-    // TODO: Why does the animation only play when run in create at the moment
+    // TODO: Create animation manager
     if (hasRod) {
-      this.player!.play('idle-rod-1');
+      this.player!.anims.play('idle-rod-1', true);
+    } else {
+      this.player!.anims.play('idle', true);
     }
   }
   // figure out typings later
