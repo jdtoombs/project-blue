@@ -9,14 +9,28 @@ export default class GameScene extends Scene {
   constructor() {
     super({ key: 'Game' });
   }
-  create() {
-    this.rod = this.physics.add.sprite(200, 200, 'rod-1');
-    this.rod.setCollideWorldBounds(true);
 
-    this.player = this.physics.add.sprite(100, 100, 'blu');
+  //TODO: Organize this with best practices later  
+  create() {
+    const map = this.add.tilemap('tilemap');
+    const tileset = map.addTilesetImage('standard_tiles', 'base_tiles');
+    const platform = map.createLayer('Ground', tileset);
+
+    this.player = this.physics.add.sprite(250, 600, 'blu');
     this.player.setBounce(0.2);
     this.player.setCollideWorldBounds(true);
     this.player.play({ key: 'idle', repeat: -1 });
+
+    this.rod = this.physics.add.sprite(200, 200, 'rod-1');
+    this.rod.setCollideWorldBounds(true);
+   
+    this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+    this.cameras.main.startFollow(this.player);
+    this.cameras.main.zoom = 4;
+
+    this.physics.add.collider(this.player, platform);
+    this.physics.add.collider(this.rod, platform);
+    platform.setCollisionBetween(0, 3);
 
     this.physics.add.overlap(this.player, this.rod, this.collectRod);
   }

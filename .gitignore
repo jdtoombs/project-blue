@@ -5,6 +5,9 @@
 /.pnp
 .pnp.js
 
+# tiled/ aseprite assets not needed for repo
+/public/assets/local
+
 # testing
 /coverage
 
