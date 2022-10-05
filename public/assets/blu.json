@@ -151,6 +151,69 @@
     "spriteSourceSize": { "x": 10, "y": 11, "w": 17, "h": 21 },
     "sourceSize": { "w": 32, "h": 32 },
     "duration": 100
+   },
+   {
+    "filename": "17",
+    "frame": { "x": 249, "y": 0, "w": 17, "h": 21 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 10, "y": 11, "w": 17, "h": 21 },
+    "sourceSize": { "w": 32, "h": 32 },
+    "duration": 100
+   },
+   {
+    "filename": "18",
+    "frame": { "x": 266, "y": 0, "w": 19, "h": 21 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 10, "y": 11, "w": 19, "h": 21 },
+    "sourceSize": { "w": 32, "h": 32 },
+    "duration": 100
+   },
+   {
+    "filename": "19",
+    "frame": { "x": 285, "y": 0, "w": 20, "h": 21 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 10, "y": 11, "w": 20, "h": 21 },
+    "sourceSize": { "w": 32, "h": 32 },
+    "duration": 100
+   },
+   {
+    "filename": "20",
+    "frame": { "x": 305, "y": 0, "w": 19, "h": 21 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 10, "y": 11, "w": 19, "h": 21 },
+    "sourceSize": { "w": 32, "h": 32 },
+    "duration": 100
+   },
+   {
+    "filename": "21",
+    "frame": { "x": 324, "y": 0, "w": 20, "h": 21 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 10, "y": 11, "w": 20, "h": 21 },
+    "sourceSize": { "w": 32, "h": 32 },
+    "duration": 100
+   },
+   {
+    "filename": "22",
+    "frame": { "x": 344, "y": 0, "w": 22, "h": 21 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 10, "y": 11, "w": 22, "h": 21 },
+    "sourceSize": { "w": 32, "h": 32 },
+    "duration": 100
+   },
+   {
+    "filename": "23",
+    "frame": { "x": 366, "y": 0, "w": 22, "h": 21 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 10, "y": 11, "w": 22, "h": 21 },
+    "sourceSize": { "w": 32, "h": 32 },
+    "duration": 100
    }
  ],
  "meta": {
@@ -158,11 +221,12 @@
   "version": "1.2.40",
   "image": "blu.png",
   "format": "RGBA8888",
-  "size": { "w": 249, "h": 21 },
+  "size": { "w": 388, "h": 21 },
   "scale": "1",
   "frameTags": [
    { "name": "idle", "from": 0, "to": 7, "direction": "forward" },
-   { "name": "idle-rod-1", "from": 8, "to": 16, "direction": "forward" }
+   { "name": "idle-rod-1", "from": 8, "to": 16, "direction": "forward" },
+   { "name": "cast", "from": 17, "to": 23, "direction": "forward" }
   ],
   "slices": [
   ]

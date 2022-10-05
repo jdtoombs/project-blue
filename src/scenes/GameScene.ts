@@ -1,10 +1,12 @@
 import { Scene, Physics } from 'phaser';
-// TODO: Move this
-let hasRod: boolean = false;
+import PlayerController from '../controllers/PlayerController';
 
 export default class GameScene extends Scene {
+  playerController!: PlayerController;
   player?: Physics.Arcade.Sprite;
   rod?: Physics.Arcade.Sprite;
+
+  hasRod?: boolean;
 
   constructor() {
     super({ key: 'Game' });
@@ -16,9 +18,13 @@ export default class GameScene extends Scene {
     const tileset = map.addTilesetImage('standard_tiles', 'base_tiles');
     const platform = map.createLayer('Ground', tileset);
 
+    // create player
     this.player = this.physics.add.sprite(250, 600, 'blu');
     this.player.setBounce(0.2);
     this.player.setCollideWorldBounds(true);
+
+    this.playerController = new PlayerController(this.player);
+    this.playerController.setState('idle');
 
     this.rod = this.physics.add.sprite(200, 200, 'rod-1');
     this.rod.setCollideWorldBounds(true);
@@ -40,30 +46,25 @@ export default class GameScene extends Scene {
     let keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
     let keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
 
-    /** Controls */
+    /** Movement Controls */
     if (keyA.isDown) {
-      this.player!.scaleX = -1;
-      this.player!.setVelocityX(-100);
+      this.playerController.setState('moveLeft');
     } else if (keyD.isDown) {
-      this.player!.scaleX = 1;
-      this.player!.setVelocityX(100);
+      this.playerController.setState('moveRight');
     } else if (keyW.isDown) {
-      this.player!.setVelocityY(-50);
+      this.playerController.setState('jump');
+    } else if (this.input.mousePointer.isDown) {
+      this.playerController.setState('cast');
+    } else if (this.hasRod) {
+      this.playerController.setState('idleRod');
     } else {
-      this.player!.setVelocityX(0);
+      this.playerController.setState('idle');
     }
 
-    /** Item Tracking */
-    // TODO: Create animation manager
-    if (hasRod) {
-      this.player!.anims.play('idle-rod-1', true);
-    } else {
-      this.player!.anims.play('idle', true);
-    }
   }
-  // figure out typings later
-  collectRod(player: any, rod: any) {
+  // figure out typings later, expected ArcadePhysicsCallback; however, need Arcade.Physics.Sprite for rod.disableBody???
+  collectRod = (player: any, rod: any) => {
     rod.disableBody(true, true);
-    hasRod = true;
-  }
+    this.hasRod = true;
+  };
 }

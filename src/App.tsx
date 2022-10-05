@@ -8,7 +8,7 @@ const create = () => {
 };
 
 function App() {
-  return <div className="App" onLoad={create}></div>;
+  return <div id="phaser-container" className="App" onLoad={create}></div>;
 }
 
 export default App;
