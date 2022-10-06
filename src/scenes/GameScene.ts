@@ -26,9 +26,6 @@ export default class GameScene extends Scene {
     this.player.setBounce(0.2);
     this.player.setCollideWorldBounds(true);
 
-    // TODO: Only allow casts if the player has bait remaining
-    this.events.once('cast', this.fishing, this);
-
     this.input.keyboard.on('keydown-F', this.fishing, this);
 
     this.actionMessage = this.add.text(220, 500, '', {
