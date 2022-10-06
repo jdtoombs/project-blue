@@ -84,7 +84,7 @@ export default class GameScene extends Scene {
   fishing = () => {
     /** Random amount of time for fish to bite */
     if (this.hasRod) {
-      const rng = Phaser.Math.Between(0, 5);
+      const rng = Phaser.Math.Between(0, 15);
       this.time.delayedCall(rng * 1000, this.reel);
     } else {
       this.actionMessage.setX(this.player?.body.x);
