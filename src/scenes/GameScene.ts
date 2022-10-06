@@ -1,4 +1,4 @@
-import { Scene, Physics } from 'phaser';
+import { Scene, Physics, GameObjects } from 'phaser';
 import PlayerController from '../controllers/PlayerController';
 
 export default class GameScene extends Scene {
@@ -7,6 +7,9 @@ export default class GameScene extends Scene {
   rod?: Physics.Arcade.Sprite;
 
   hasRod?: boolean;
+  casted?: boolean;
+  fishOnLine?: boolean;
+  actionMessage!: GameObjects.Text;
 
   constructor() {
     super({ key: 'Game' });
@@ -22,6 +25,16 @@ export default class GameScene extends Scene {
     this.player = this.physics.add.sprite(250, 600, 'blu');
     this.player.setBounce(0.2);
     this.player.setCollideWorldBounds(true);
+
+    // TODO: Only allow casts if the player has bait remaining
+    this.events.once('cast', this.fishing, this);
+
+    this.input.keyboard.on('keydown-F', this.fishing, this);
+
+    this.actionMessage = this.add.text(220, 500, '', {
+      font: '"Press Start 2P"',
+      fontSize: '12',
+    });
 
     this.playerController = new PlayerController(this.player);
     this.playerController.setState('idle');
@@ -53,18 +66,37 @@ export default class GameScene extends Scene {
       this.playerController.setState('moveRight');
     } else if (keyW.isDown) {
       this.playerController.setState('jump');
-    } else if (this.input.mousePointer.isDown) {
+    } else if (this.input.mousePointer.isDown && this.hasRod) {
       this.playerController.setState('cast');
+      this.casted = true;
     } else if (this.hasRod) {
       this.playerController.setState('idleRod');
     } else {
       this.playerController.setState('idle');
     }
-
   }
   // figure out typings later, expected ArcadePhysicsCallback; however, need Arcade.Physics.Sprite for rod.disableBody???
   collectRod = (player: any, rod: any) => {
     rod.disableBody(true, true);
     this.hasRod = true;
+  };
+
+  fishing = () => {
+    /** Random amount of time for fish to bite */
+    if (this.hasRod) {
+      const rng = Phaser.Math.Between(0, 5);
+      this.time.delayedCall(rng * 1000, this.reel);
+    } else {
+      this.actionMessage.setX(this.player?.body.x);
+      this.actionMessage.setY(this.player?.body.y);
+      this.actionMessage.setText('You need a rod to fish!');
+    }
+  };
+
+  reel = () => {
+    /** Indicate when fish on the line. */
+    this.actionMessage.setX(this.player?.body.x);
+    this.actionMessage.setY(this.player?.body.y);
+    this.actionMessage.setText('Reel!');
   };
 }
