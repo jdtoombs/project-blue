@@ -45,7 +45,7 @@ export default class GameScene extends Scene {
 
     this.physics.add.collider(this.player, platform);
     this.physics.add.collider(this.rod, platform);
-    platform.setCollisionBetween(0, 3);
+    platform.setCollision([0,1,2,6]);
 
     this.physics.add.overlap(this.player, this.rod, this.collectRod);
   }
@@ -81,7 +81,7 @@ export default class GameScene extends Scene {
   fishing = () => {
     /** Random amount of time for fish to bite */
     if (this.hasRod) {
-      const rng = Phaser.Math.Between(0, 15);
+      const rng = Phaser.Math.Between(0, 10);
       this.time.delayedCall(rng * 1000, this.reel);
     } else {
       this.actionMessage.setX(this.player?.body.x);
