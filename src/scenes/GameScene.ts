@@ -11,6 +11,8 @@ export default class GameScene extends Scene {
   fishOnLine?: boolean;
   actionMessage!: GameObjects.Text;
 
+  stars?: GameObjects.TileSprite;
+
   constructor() {
     super({ key: 'Game' });
   }
@@ -20,6 +22,17 @@ export default class GameScene extends Scene {
     const map = this.add.tilemap('tilemap');
     const tileset = map.addTilesetImage('standard_tiles', 'base_tiles');
     const platform = map.createLayer('Ground', tileset);
+    map.createLayer('Background', tileset);
+
+    const starsRef = this.textures.get('stars').getSourceImage();
+
+    this.stars = this.add.tileSprite(
+      0,
+      315,
+      this.game.canvas.width,
+      starsRef.height,
+      'stars',
+    );
 
     // create player
     this.player = this.physics.add.sprite(250, 600, 'blu');
@@ -45,7 +58,7 @@ export default class GameScene extends Scene {
 
     this.physics.add.collider(this.player, platform);
     this.physics.add.collider(this.rod, platform);
-    platform.setCollision([0,1,2,6]);
+    platform.setCollision([0, 1, 2, 6]);
 
     this.physics.add.overlap(this.player, this.rod, this.collectRod);
   }
@@ -71,6 +84,9 @@ export default class GameScene extends Scene {
     } else {
       this.playerController.setState('idle');
     }
+
+      this.stars!.x -= 0.005;
+
   }
   // figure out typings later, expected ArcadePhysicsCallback; however, need Arcade.Physics.Sprite for rod.disableBody???
   collectRod = (player: any, rod: any) => {
