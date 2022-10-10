@@ -8,6 +8,8 @@ export default class BootScene extends Scene {
     this.load.aseprite({ key: 'blu', textureURL: '/assets/blu.png', atlasURL: '/assets/blu.json' });
     this.load.image('rod-1', '/assets/rod-1.png');
     this.load.image('stars', '/assets/stars.png');
+    this.load.image('fishing-bar', '/assets/fishing-bar.png');
+    this.load.image('slider', '/assets/slider.png');
 
     // level
     this.load.image('base_tiles', '/assets/base_tiles.png');

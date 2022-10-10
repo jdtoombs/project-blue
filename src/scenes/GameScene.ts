@@ -5,13 +5,16 @@ export default class GameScene extends Scene {
   playerController!: PlayerController;
   player?: Physics.Arcade.Sprite;
   rod?: Physics.Arcade.Sprite;
+  slider?: any;
+  fishingBar?: GameObjects.Sprite;
 
   hasRod?: boolean;
   casted?: boolean;
   fishOnLine?: boolean;
   actionMessage!: GameObjects.Text;
 
-  stars?: GameObjects.TileSprite;
+  stars?: GameObjects.Sprite;
+  mountains?: GameObjects.TileSprite;
 
   constructor() {
     super({ key: 'Game' });
@@ -24,15 +27,7 @@ export default class GameScene extends Scene {
     const platform = map.createLayer('Ground', tileset);
     map.createLayer('Background', tileset);
 
-    const starsRef = this.textures.get('stars').getSourceImage();
-
-    this.stars = this.add.tileSprite(
-      0,
-      315,
-      this.game.canvas.width,
-      starsRef.height,
-      'stars',
-    );
+    this.stars = this.add.sprite(250, 315, 'stars');
 
     // create player
     this.player = this.physics.add.sprite(250, 600, 'blu');
@@ -69,6 +64,25 @@ export default class GameScene extends Scene {
     let keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
     let keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
 
+    if (!!this.slider) {
+      if (this.input.mousePointer.isDown) {
+        this.slider.setVelocityX(10);
+      } else {
+        // TODO: Busted, breaks game when fish is lost
+        this.slider.setVelocityX(-10);
+      }
+      if (
+        Math.floor(this.slider.x) === Math.floor(this.fishingBar!.x - 30) ||
+        Math.floor(this.slider.x) === Math.floor(this.fishingBar!.x + 30)
+      ) {
+        this.actionMessage.setX(this.player!.body.x + 5);
+        this.actionMessage.setY(this.player!.body.y - 5);
+        this.actionMessage.setText('Fish lost!');
+        this.fishingBar?.destroy();
+        this.slider.destroy();
+      }
+    }
+
     /** Movement Controls */
     if (keyA.isDown) {
       this.playerController.setState('moveLeft');
@@ -85,8 +99,7 @@ export default class GameScene extends Scene {
       this.playerController.setState('idle');
     }
 
-      this.stars!.x -= 0.005;
-
+    this.stars!.x -= 0.005;
   }
   // figure out typings later, expected ArcadePhysicsCallback; however, need Arcade.Physics.Sprite for rod.disableBody???
   collectRod = (player: any, rod: any) => {
@@ -97,7 +110,7 @@ export default class GameScene extends Scene {
   fishing = () => {
     /** Random amount of time for fish to bite */
     if (this.hasRod) {
-      const rng = Phaser.Math.Between(0, 10);
+      const rng = Phaser.Math.Between(0, 3);
       this.time.delayedCall(rng * 1000, this.reel);
     } else {
       this.actionMessage.setX(this.player?.body.x);
@@ -108,8 +121,15 @@ export default class GameScene extends Scene {
 
   reel = () => {
     /** Indicate when fish on the line. */
-    this.actionMessage.setX(this.player?.body.x);
-    this.actionMessage.setY(this.player?.body.y);
+    this.actionMessage.setX(this.player!.body.x + 5);
+    this.actionMessage.setY(this.player!.body.y - 5);
     this.actionMessage.setText('Reel!');
+    this.fishingBar = this.add.sprite(
+      this.player!.body.x + 15,
+      this.player!.body.y - 10,
+      'fishing-bar',
+    );
+    this.slider = this.physics.add.sprite(this.fishingBar.x, this.fishingBar.y - 1, 'slider');
+    this.slider.body.setAllowGravity(false);
   };
 }
