@@ -9,6 +9,7 @@ export default class MoveRightState {
     // TODO: Add walk right animation
     const speed = 100;
     this.player.scaleX = 1;
+    this.player.setOffset(10);
     this.player.setVelocityX(speed);
   }
 }

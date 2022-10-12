@@ -21,6 +21,7 @@ export const phaser = {
       default: 'arcade',
       arcade: {
         gravity: { y: 200 },
+        // debug: true,
       },
     },
     scene: [BootScene, GameScene],

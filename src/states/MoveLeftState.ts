@@ -9,6 +9,7 @@ export default class MoveLeftState {
     // TODO:  add walking animation here
     const speed = 100;
     this.player.scaleX = -1;
+    this.player.setOffset(23,10);
     this.player.setVelocityX(-speed);
   }
 }

@@ -214,6 +214,42 @@
     "spriteSourceSize": { "x": 10, "y": 11, "w": 22, "h": 21 },
     "sourceSize": { "w": 32, "h": 32 },
     "duration": 100
+   },
+   {
+    "filename": "24",
+    "frame": { "x": 388, "y": 0, "w": 22, "h": 21 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 10, "y": 11, "w": 22, "h": 21 },
+    "sourceSize": { "w": 32, "h": 32 },
+    "duration": 100
+   },
+   {
+    "filename": "25",
+    "frame": { "x": 410, "y": 0, "w": 22, "h": 21 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 10, "y": 11, "w": 22, "h": 21 },
+    "sourceSize": { "w": 32, "h": 32 },
+    "duration": 100
+   },
+   {
+    "filename": "26",
+    "frame": { "x": 432, "y": 0, "w": 22, "h": 21 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 10, "y": 11, "w": 22, "h": 21 },
+    "sourceSize": { "w": 32, "h": 32 },
+    "duration": 100
+   },
+   {
+    "filename": "27",
+    "frame": { "x": 454, "y": 0, "w": 22, "h": 21 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 10, "y": 11, "w": 22, "h": 21 },
+    "sourceSize": { "w": 32, "h": 32 },
+    "duration": 100
    }
  ],
  "meta": {
@@ -221,12 +257,13 @@
   "version": "1.2.40",
   "image": "blu.png",
   "format": "RGBA8888",
-  "size": { "w": 388, "h": 21 },
+  "size": { "w": 476, "h": 21 },
   "scale": "1",
   "frameTags": [
    { "name": "idle", "from": 0, "to": 7, "direction": "forward" },
    { "name": "idle-rod-1", "from": 8, "to": 16, "direction": "forward" },
-   { "name": "cast", "from": 17, "to": 23, "direction": "forward" }
+   { "name": "cast", "from": 17, "to": 23, "direction": "forward" },
+   { "name": "reel", "from": 24, "to": 27, "direction": "forward" }
   ],
   "slices": [
   ]

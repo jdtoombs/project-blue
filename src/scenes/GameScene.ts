@@ -9,7 +9,9 @@ export default class GameScene extends Scene {
   fishingBar?: GameObjects.Sprite;
 
   hasRod?: boolean;
-  casted?: boolean;
+  casted?: boolean = false;
+  reeling?: boolean = false;
+
   fishOnLine?: boolean;
   actionMessage!: GameObjects.Text;
 
@@ -22,15 +24,34 @@ export default class GameScene extends Scene {
 
   //TODO: Organize this with best practices later
   create() {
+    const numberOfYellowStars = Phaser.Math.Between(0, 5);
+    const numberOfWhiteStars = Phaser.Math.Between(10, 50);
+
     const map = this.add.tilemap('tilemap');
     const tileset = map.addTilesetImage('standard_tiles', 'base_tiles');
     const platform = map.createLayer('Ground', tileset);
     map.createLayer('Background', tileset);
 
-    this.stars = this.add.sprite(250, 315, 'stars');
+    // this.stars = this.add.sprite(250, 315, 'stars');
+    // this.add.sprite(250, Phaser.Math.Between(300, 315), 'yellow-star');
 
+    for (let i = 0; i < numberOfWhiteStars; i++) {
+      this.physics.add
+        .sprite(Phaser.Math.Between(0, 450), Phaser.Math.Between(480, 530), 'white-star')
+        .setVelocityX(0.25)
+        .body.setAllowGravity(false);
+    }
+
+    for (let i = 0; i < numberOfYellowStars; i++) {
+      let yellowStar = this.physics.add
+        .sprite(Phaser.Math.Between(0, 450), Phaser.Math.Between(480, 500), 'yellow-star')
+        .setVelocityX(0.35);
+      yellowStar.anims.play({ key: 'Glow', repeat: -1 });
+      yellowStar.body.setAllowGravity(false);
+    }
     // create player
     this.player = this.physics.add.sprite(250, 600, 'blu');
+    this.player.setSize(13, 22).setOffset(10);
     this.player.setBounce(0.2);
     this.player.setCollideWorldBounds(true);
 
@@ -45,6 +66,7 @@ export default class GameScene extends Scene {
     this.playerController.setState('idle');
 
     this.rod = this.physics.add.sprite(200, 200, 'rod-1');
+    this.rod.setSize(15, 10).setOffset(0, 20);
     this.rod.setCollideWorldBounds(true);
 
     this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
@@ -53,7 +75,7 @@ export default class GameScene extends Scene {
 
     this.physics.add.collider(this.player, platform);
     this.physics.add.collider(this.rod, platform);
-    platform.setCollision([0, 1, 2, 6]);
+    platform.setCollisionBetween(0, 15);
 
     this.physics.add.overlap(this.player, this.rod, this.collectRod);
   }
@@ -64,7 +86,7 @@ export default class GameScene extends Scene {
     let keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
     let keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
 
-    if (!!this.slider) {
+    if (!!this.slider && !!this.fishingBar && this.reeling) {
       if (this.input.mousePointer.isDown) {
         this.slider.setVelocityX(10);
       } else {
@@ -78,28 +100,29 @@ export default class GameScene extends Scene {
         this.actionMessage.setX(this.player!.body.x + 5);
         this.actionMessage.setY(this.player!.body.y - 5);
         this.actionMessage.setText('Fish lost!');
+        this.reeling = false;
         this.fishingBar?.destroy();
         this.slider.destroy();
       }
     }
 
-    /** Movement Controls */
+    /** Control State */
     if (keyA.isDown) {
       this.playerController.setState('moveLeft');
     } else if (keyD.isDown) {
       this.playerController.setState('moveRight');
     } else if (keyW.isDown) {
       this.playerController.setState('jump');
-    } else if (this.input.mousePointer.isDown && this.hasRod) {
-      this.playerController.setState('cast');
-      this.casted = true;
-    } else if (this.hasRod) {
+    } else if (this.hasRod && !this.casted && !this.reeling) {
       this.playerController.setState('idleRod');
-    } else {
+    } else if (!this.casted && !this.reeling) {
       this.playerController.setState('idle');
+    } else if (this.casted && !this.reeling) {
+      this.playerController.setState('cast');
+    } else if (this.reeling) {
+      this.casted = false;
+      this.playerController.setState('reel');
     }
-
-    this.stars!.x -= 0.005;
   }
   // figure out typings later, expected ArcadePhysicsCallback; however, need Arcade.Physics.Sprite for rod.disableBody???
   collectRod = (player: any, rod: any) => {
@@ -110,7 +133,8 @@ export default class GameScene extends Scene {
   fishing = () => {
     /** Random amount of time for fish to bite */
     if (this.hasRod) {
-      const rng = Phaser.Math.Between(0, 3);
+      this.casted = true;
+      const rng = Phaser.Math.Between(0, 10);
       this.time.delayedCall(rng * 1000, this.reel);
     } else {
       this.actionMessage.setX(this.player?.body.x);
@@ -124,12 +148,15 @@ export default class GameScene extends Scene {
     this.actionMessage.setX(this.player!.body.x + 5);
     this.actionMessage.setY(this.player!.body.y - 5);
     this.actionMessage.setText('Reel!');
+    this.reeling = true;
     this.fishingBar = this.add.sprite(
       this.player!.body.x + 15,
       this.player!.body.y - 10,
       'fishing-bar',
     );
-    this.slider = this.physics.add.sprite(this.fishingBar.x, this.fishingBar.y - 1, 'slider');
-    this.slider.body.setAllowGravity(false);
+    if (!this.slider) {
+      this.slider = this.physics.add.sprite(this.fishingBar.x, this.fishingBar.y - 1, 'slider');
+      this.slider.body.setAllowGravity(false);
+    }
   };
 }
