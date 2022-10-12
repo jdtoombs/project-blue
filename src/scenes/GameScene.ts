@@ -11,6 +11,7 @@ export default class GameScene extends Scene {
   hasRod?: boolean;
   casted?: boolean = false;
   reeling?: boolean = false;
+  count?: number = 0;
 
   fishOnLine?: boolean;
   actionMessage!: GameObjects.Text;
@@ -88,11 +89,20 @@ export default class GameScene extends Scene {
 
     if (!!this.slider && !!this.fishingBar && this.reeling) {
       if (this.input.mousePointer.isDown) {
-        this.slider.setVelocityX(10);
+        this.slider.setVelocityX(20);
       } else {
-        // TODO: Busted, breaks game when fish is lost
-        this.slider.setVelocityX(-10);
+        this.slider.setVelocityX(-30);
       }
+
+      if (
+        Math.floor(this.slider.x) >= Math.floor(this.fishingBar!.x - 5) &&
+        Math.floor(this.slider.x) <= Math.floor(this.fishingBar!.x + 5)
+      ) {
+        this.count!++;
+      } else {
+        this.count = this.count! - 0.35;
+      }
+
       if (
         Math.floor(this.slider.x) === Math.floor(this.fishingBar!.x - 30) ||
         Math.floor(this.slider.x) === Math.floor(this.fishingBar!.x + 30)
@@ -104,6 +114,14 @@ export default class GameScene extends Scene {
         this.fishingBar?.destroy();
         this.slider.destroy();
       }
+    }
+
+    if (this.count === 300) {
+      this.actionMessage.setText('Fish caught!');
+      this.reeling = false;
+      this.count = 0;
+      this.fishingBar?.destroy();
+      this.slider.destroy();
     }
 
     /** Control State */
