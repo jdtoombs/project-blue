@@ -1,18 +1,23 @@
-export default class IdleState {
-  player: Phaser.Physics.Arcade.Sprite;
-  hasRod: boolean;
+import { ICustomPlayerSprite } from "../interfaces";
 
-  constructor(player: Phaser.Physics.Arcade.Sprite, hasRod: boolean) {
+export default class IdleState {
+  player: ICustomPlayerSprite;
+
+  constructor(player: ICustomPlayerSprite) {
     this.player = player;
-    this.hasRod = hasRod;
   }
 
   enter() {
+    let noFish = this.player.playerObjectState?.fishCaught === false;
     this.player.setVelocity(0, 0);
-    if (this.hasRod) {
-      this.player.anims.play({ key: 'idle-rod-1', repeat: -1 });
-    } else {
-      this.player.anims.play({ key: 'idle', repeat: -1 });
+    if (!!this.player.playerObjectState) {
+      if (this.player.playerObjectState.hasRod && noFish) {
+        this.player.anims.play({ key: 'idle-rod-1', repeat: -1 });
+      } else if (this.player.playerObjectState.fishCaught) {
+        this.player.anims.play({ key: 'idle-fish', repeat: -1 });
+      } else {
+        this.player.anims.play({ key: 'idle', repeat: -1 });
+      }
     }
   }
 }

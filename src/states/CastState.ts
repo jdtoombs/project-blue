@@ -1,15 +1,15 @@
+import { ICustomPlayerSprite } from "../interfaces";
+
 export default class CastState {
-    player: Phaser.Physics.Arcade.Sprite;
-    hasRod: boolean;
+    player: ICustomPlayerSprite;
   
-    constructor(player: Phaser.Physics.Arcade.Sprite, hasRod: boolean) {
+    constructor(player: ICustomPlayerSprite) {
       this.player = player;
-      this.hasRod = hasRod;
     }
   
-    enter(hasRod?: boolean) {
+    enter() {
       this.player.setVelocity(0, 0);
-      if (this.hasRod) {
+      if (this.player.playerObjectState?.hasRod && !this.player.playerObjectState?.reeling) {
         this.player.anims.play({ key: 'cast', repeat: 0 });
       } 
     }

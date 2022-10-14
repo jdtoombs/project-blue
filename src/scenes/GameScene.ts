@@ -1,16 +1,14 @@
 import { Scene, Physics, GameObjects } from 'phaser';
 import PlayerController from '../controllers/PlayerController';
+import { ICustomPlayerSprite } from '../interfaces';
 
 export default class GameScene extends Scene {
   playerController!: PlayerController;
-  player?: Physics.Arcade.Sprite;
+  player?: ICustomPlayerSprite;
   rod?: Physics.Arcade.Sprite;
   slider?: any;
   fishingBar?: GameObjects.Sprite;
 
-  hasRod?: boolean;
-  casted?: boolean = false;
-  reeling?: boolean = false;
   count?: number = 0;
 
   fishOnLine?: boolean;
@@ -33,9 +31,6 @@ export default class GameScene extends Scene {
     const platform = map.createLayer('Ground', tileset);
     map.createLayer('Background', tileset);
 
-    // this.stars = this.add.sprite(250, 315, 'stars');
-    // this.add.sprite(250, Phaser.Math.Between(300, 315), 'yellow-star');
-
     for (let i = 0; i < numberOfWhiteStars; i++) {
       this.physics.add
         .sprite(Phaser.Math.Between(0, 450), Phaser.Math.Between(480, 530), 'white-star')
@@ -55,6 +50,12 @@ export default class GameScene extends Scene {
     this.player.setSize(13, 22).setOffset(10);
     this.player.setBounce(0.2);
     this.player.setCollideWorldBounds(true);
+    this.player.playerObjectState = {
+      hasRod: false,
+      casted: false,
+      reeling: false,
+      fishCaught: false,
+    };
 
     this.input.keyboard.on('keydown-F', this.fishing, this);
 
@@ -87,7 +88,7 @@ export default class GameScene extends Scene {
     let keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
     let keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
 
-    if (!!this.slider && !!this.fishingBar && this.reeling) {
+    if (!!this.slider && !!this.fishingBar && this.player!.playerObjectState!.reeling) {
       if (this.input.mousePointer.isDown) {
         this.slider.setVelocityX(20);
       } else {
@@ -99,6 +100,7 @@ export default class GameScene extends Scene {
         Math.floor(this.slider.x) <= Math.floor(this.fishingBar!.x + 5)
       ) {
         this.count!++;
+        console.log(this.count);
       } else {
         this.count = this.count! - 0.35;
       }
@@ -110,18 +112,19 @@ export default class GameScene extends Scene {
         this.actionMessage.setX(this.player!.body.x + 5);
         this.actionMessage.setY(this.player!.body.y - 5);
         this.actionMessage.setText('Fish lost!');
-        this.reeling = false;
+        this.player!.playerObjectState!.reeling = false;
         this.fishingBar?.destroy();
         this.slider.destroy();
       }
     }
 
-    if (this.count === 300) {
+    if (this.count! >= 300) {
       this.actionMessage.setText('Fish caught!');
-      this.reeling = false;
+      this.player!.playerObjectState!.reeling = false;
       this.count = 0;
       this.fishingBar?.destroy();
       this.slider.destroy();
+      this.player!.playerObjectState!.fishCaught = true;
     }
 
     /** Control State */
@@ -131,28 +134,26 @@ export default class GameScene extends Scene {
       this.playerController.setState('moveRight');
     } else if (keyW.isDown) {
       this.playerController.setState('jump');
-    } else if (this.hasRod && !this.casted && !this.reeling) {
-      this.playerController.setState('idleRod');
-    } else if (!this.casted && !this.reeling) {
-      this.playerController.setState('idle');
-    } else if (this.casted && !this.reeling) {
+    } else if (this.player!.playerObjectState!.casted && !this.player!.playerObjectState!.reeling) {
       this.playerController.setState('cast');
-    } else if (this.reeling) {
-      this.casted = false;
+    } else if (this.player!.playerObjectState!.reeling) {
+      this.player!.playerObjectState!.casted = false;
       this.playerController.setState('reel');
+    } else {
+      this.playerController.setState('idle');
     }
   }
   // figure out typings later, expected ArcadePhysicsCallback; however, need Arcade.Physics.Sprite for rod.disableBody???
   collectRod = (player: any, rod: any) => {
     rod.disableBody(true, true);
-    this.hasRod = true;
+    this.player!.playerObjectState!.hasRod = true;
   };
 
   fishing = () => {
     /** Random amount of time for fish to bite */
-    if (this.hasRod) {
-      this.casted = true;
-      const rng = Phaser.Math.Between(0, 10);
+    if (this.player!.playerObjectState!.hasRod) {
+      this.player!.playerObjectState!.casted = true;
+      const rng = Phaser.Math.Between(2, 10);
       this.time.delayedCall(rng * 1000, this.reel);
     } else {
       this.actionMessage.setX(this.player?.body.x);
@@ -166,7 +167,7 @@ export default class GameScene extends Scene {
     this.actionMessage.setX(this.player!.body.x + 5);
     this.actionMessage.setY(this.player!.body.y - 5);
     this.actionMessage.setText('Reel!');
-    this.reeling = true;
+    this.player!.playerObjectState!.reeling = true;
     this.fishingBar = this.add.sprite(
       this.player!.body.x + 15,
       this.player!.body.y - 10,

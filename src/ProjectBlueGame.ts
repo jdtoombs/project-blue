@@ -11,7 +11,7 @@ export const phaser = {
     parent: 'phaser-container',
     width: 1000,
     height: 650,
-    backgroundColor: '#282c34',
+    backgroundColor: '#10101e',
     scale: {
       mode: Phaser.Scale.ScaleModes.NONE,
       autoCenter: Phaser.Scale.CENTER_BOTH,

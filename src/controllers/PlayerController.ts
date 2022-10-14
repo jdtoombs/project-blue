@@ -5,7 +5,7 @@ import MoveLeftState from '../states/MoveLeftState';
 import MoveRightState from '../states/MoveRighState';
 import ReelState from '../states/ReelState';
 
-type PlayerState = 'idle' | 'moveLeft' | 'moveRight' | 'jump' | 'idleRod' | 'cast' | 'reel';
+type PlayerState = 'idle' | 'moveLeft' | 'moveRight' | 'jump' | 'idleRod' | 'cast' | 'reel' | 'idleFish';
 
 export default class PlayerController {
   states: { [key: string]: { enter: () => void } };
@@ -13,12 +13,11 @@ export default class PlayerController {
 
   constructor(player: Phaser.Physics.Arcade.Sprite) {
     this.states = {
-      idle: new IdleState(player, false),
+      idle: new IdleState(player),
       moveLeft: new MoveLeftState(player),
       moveRight: new MoveRightState(player),
       jump: new JumpState(player),
-      idleRod: new IdleState(player, true),
-      cast: new CastState(player, true),
+      cast: new CastState(player),
       reel: new ReelState(player, true),
     };
   }
