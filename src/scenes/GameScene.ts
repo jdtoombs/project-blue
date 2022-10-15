@@ -93,6 +93,10 @@ export default class GameScene extends Scene {
     this.cameras.main.startFollow(this.player);
     this.cameras.main.zoom = 4;
 
+    // make constants for numeric values, calculate rather than hardcode
+    this.add.image(this.cameras.main.centerX + 120.95, this.cameras.main.centerY - 77, 'inventory-button').setScale(0.25).setScrollFactor(0);
+    this.add.image(this.cameras.main.centerX + 120.95, this.cameras.main.centerY - 69, 'character-button').setScale(0.25).setScrollFactor(0);
+
     this.physics.add.collider(this.player, platform);
     this.physics.add.collider(this.rod, platform);
     platform.setCollisionBetween(0, 15);
@@ -189,9 +193,8 @@ export default class GameScene extends Scene {
       // must click mouse to hook fish
 
       const rng = Phaser.Math.Between(2, 10);
-      const numberOfMovements = Phaser.Math.Between(1, 3);
 
-      this.time.delayedCall(rng * 1000, this.reel, [numberOfMovements]);
+      this.time.delayedCall(rng * 1000, this.reel);
     } else {
       this.actionMessage.setX(this.player?.body.x);
       this.actionMessage.setY(this.player?.body.y);
@@ -208,7 +211,7 @@ export default class GameScene extends Scene {
     }
   };
 
-  reel = (numberOfMovements: number) => {
+  reel = () => {
     /** Indicate when fish on the line. */
     this.currentFish = determineFish(this.currentFish!);
     this.actionMessage.setX(this.player!.body.x + 5);
