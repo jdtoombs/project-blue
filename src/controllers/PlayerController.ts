@@ -1,4 +1,5 @@
 import CastState from '../states/CastState';
+import FishCaughtState from '../states/FishCaughtState';
 import IdleState from '../states/IdleState';
 import JumpState from '../states/JumpState';
 import MoveLeftState from '../states/MoveLeftState';
@@ -14,6 +15,7 @@ export default class PlayerController {
   constructor(player: Phaser.Physics.Arcade.Sprite) {
     this.states = {
       idle: new IdleState(player),
+      idleFish: new FishCaughtState(player),
       moveLeft: new MoveLeftState(player),
       moveRight: new MoveRightState(player),
       jump: new JumpState(player),
