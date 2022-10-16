@@ -11,9 +11,12 @@ export default class BootScene extends Scene {
     // buttons
     this.load.image('inventory-button', '/assets/inventory-button.png');
     this.load.image('character-button', '/assets/character-button.png');
+    this.load.image('caught-button', '/assets/caught-button.png');
+    this.load.image('inventory', '/assets/inventory.png');
     
     // items
     this.load.image('rod-1', '/assets/rod-1.png');
+    this.load.image('fish-inv', '/assets/fish-inv.png');
     
     // sky assets
     this.load.image('stars', '/assets/stars.png');

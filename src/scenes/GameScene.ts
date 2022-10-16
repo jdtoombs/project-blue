@@ -5,6 +5,7 @@ import { ICustomPlayerSprite, IFish } from '../interfaces';
 import { determineFish, determineFishDifficulty } from '../utils';
 
 let dir: number;
+let inventory: any;
 
 export default class GameScene extends Scene {
   playerController!: PlayerController;
@@ -16,7 +17,9 @@ export default class GameScene extends Scene {
 
   currentFish?: IFish;
 
-  count?: number = 0;
+  items: GameObjects.Sprite[] = [];
+
+  count?: number = 50;
 
   fishOnLine?: boolean;
   actionMessage!: GameObjects.Text;
@@ -93,9 +96,49 @@ export default class GameScene extends Scene {
     this.cameras.main.startFollow(this.player);
     this.cameras.main.zoom = 4;
 
+    inventory = this.add
+      .sprite(this.cameras.main.centerX, this.cameras.main.centerY - 10, 'inventory')
+      .setScrollFactor(0);
+    inventory.visible = false;
+
     // make constants for numeric values, calculate rather than hardcode
-    this.add.image(this.cameras.main.centerX + 120.95, this.cameras.main.centerY - 77, 'inventory-button').setScale(0.25).setScrollFactor(0);
-    this.add.image(this.cameras.main.centerX + 120.95, this.cameras.main.centerY - 69, 'character-button').setScale(0.25).setScrollFactor(0);
+    const inventoryButton = this.add
+      .sprite(
+        this.cameras.main.centerX + 120.95,
+        this.cameras.main.centerY - 77.25,
+        'inventory-button',
+      )
+      .setScale(0.25)
+      .setScrollFactor(0)
+      .setInteractive();
+    this.add
+      .image(
+        this.cameras.main.centerX + 120.95,
+        this.cameras.main.centerY - 69.25,
+        'character-button',
+      )
+      .setScale(0.25)
+      .setScrollFactor(0)
+      .setInteractive();
+    this.add
+      .image(this.cameras.main.centerX + 120.95, this.cameras.main.centerY - 61.25, 'caught-button')
+      .setScale(0.25)
+      .setScrollFactor(0)
+      .setInteractive();
+
+    inventoryButton.on('pointerover', () => {
+      inventoryButton.setTint(0xcccccc);
+    });
+    inventoryButton.on('pointerout', () => {
+      inventoryButton.clearTint();
+    });
+    inventoryButton.on('pointerdown', () => {
+      inventory.setVisible(!inventory.visible);
+      this.items.forEach((item: GameObjects.Sprite) => { 
+        item.setVisible(!item.visible);
+      });
+      console.log(this.items.length);
+    });
 
     this.physics.add.collider(this.player, platform);
     this.physics.add.collider(this.rod, platform);
@@ -109,6 +152,31 @@ export default class GameScene extends Scene {
     let keyA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
     let keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
     let keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
+
+    if (this.items.length !== 6) {
+      if(this.items.length > 0) console.log(13 * this.items.length - 1);
+      let yCalc = this.items.length < 3 ? inventory.y - 7 : inventory.y + 7;
+      let xCalc = this.items.length > 0 && this.items.length !== 3 ? (inventory.x + (13 * (this.items.length - (this.items.length > 3 ? 4 : 1)))) : inventory.x - 13;
+        
+      this.items.push(
+        this.add
+          .sprite(xCalc, yCalc, 'fish-inv')
+          .setScrollFactor(0)
+          .setVisible(false).setInteractive(),
+      );
+
+      this.items.forEach((item: GameObjects.Sprite) => {
+        item.on('pointerover', () => {
+          item.setTint(0xcccccc);
+        });
+        item.on('pointerout', () => {
+          item.clearTint();
+        });
+        item.on('pointerdown', () => {
+          console.log('clicked');
+        });
+      });
+    }
 
     if (!!this.slider && !!this.fishingBar && this.player!.playerObjectState!.reeling) {
       if (this.input.mousePointer.isDown) {
@@ -144,17 +212,29 @@ export default class GameScene extends Scene {
       }
     }
 
+    this.checkSliderBounds();
+
     if (!!this.currentFish) {
-      if (this.count! >= determineFishDifficulty(this.currentFish!.rarity, 300)) {
+      const totalNeeded = determineFishDifficulty(this.currentFish!.rarity, 300);
+      if (this.count! >= totalNeeded) {
         this.actionMessage.setText(`You caught a ${this.currentFish!.rarity} fish!`);
         setTimeout(() => this.actionMessage.setText(''), 2000);
         this.player!.playerObjectState!.reeling = false;
-        this.count = 0;
+        this.count = 50;
 
         // reset bar and slider
         this.fishingBarReset();
 
         this.player!.playerObjectState!.fishCaught = true;
+      }
+
+      if (this.count && Math.floor(this.count) <= 0) {
+        this.actionMessage.setText(`You lost a ${this.currentFish!.rarity} fish!`);
+        setTimeout(() => this.actionMessage.setText(''), 2000);
+        this.player!.playerObjectState!.reeling = false;
+        this.count = 50;
+        // reset bar and slider
+        this.fishingBarReset();
       }
     }
 
@@ -240,14 +320,11 @@ export default class GameScene extends Scene {
     }
     this.slider.setDepth(2);
     this.greenSlider!.setDepth(1);
-
-
   };
 
   greenSliderMovement = () => {
     const frontEnd = this.fishingBar!.x + 25;
     const backEnd = this.fishingBar!.x - 25;
-
 
     // randomize movement based on fish rarity
     const endPoint =
@@ -275,13 +352,22 @@ export default class GameScene extends Scene {
   };
 
   fishingBarReset = () => {
-        this.fishingBar?.setVisible(false);
-        this.slider!.setVelocityX(0);
-        this.slider!.setVisible(false);
-        this.greenSlider!.setVisible(false);
-        this.greenSlider!.setVelocityX(0);
-        this.greenSlider!.setX(this.fishingBar!.x);
-        this.slider!.x = this.fishingBar!.x;
-        this.slider!.y = this.fishingBar!.y - 1;
-  }
+    this.fishingBar?.setVisible(false);
+    this.slider!.setVelocityX(0);
+    this.slider!.setVisible(false);
+    this.greenSlider!.setVisible(false);
+    this.greenSlider!.setVelocityX(0);
+    this.greenSlider!.setX(this.fishingBar!.x);
+    this.slider!.x = this.fishingBar!.x;
+    this.slider!.y = this.fishingBar!.y - 1;
+  };
+
+  checkSliderBounds = () => {
+    if (this.player?.playerObjectState?.reeling) {
+      if (this.slider!.x <= this.greenSlider!.x - 7 || this.slider!.x >= this.greenSlider!.x + 7) {
+        this.count = this.count! - 1;
+        console.log(this.count);
+      }
+    }
+  };
 }
