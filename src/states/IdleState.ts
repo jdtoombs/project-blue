@@ -1,4 +1,4 @@
-import { ICustomPlayerSprite } from '../interfaces';
+import { ICustomPlayerSprite } from "../interfaces";
 
 export default class IdleState {
   player: ICustomPlayerSprite;

@@ -1,8 +1,9 @@
 import { Scene, Physics, GameObjects } from 'phaser';
+import { text } from 'stream/consumers';
 import { Rarity } from '../constants';
 import PlayerController from '../controllers/PlayerController';
 import { ICustomPlayerSprite, IFish } from '../interfaces';
-import { determineFish, determineFishDifficulty } from '../utils';
+import { determineFish, determineFishDifficulty, determineFishItem, determineItemPositionX } from '../utils';
 
 let dir: number;
 let inventory: any;
@@ -18,6 +19,7 @@ export default class GameScene extends Scene {
   currentFish?: IFish;
 
   items: GameObjects.Sprite[] = [];
+  itemText?: GameObjects.Text;
 
   count?: number = 50;
 
@@ -101,6 +103,9 @@ export default class GameScene extends Scene {
       .setScrollFactor(0);
     inventory.visible = false;
 
+    this.itemText = this.add.text(inventory.x - 26, inventory.y, "click and drag me", { font: "65px Arial" });
+
+
     // make constants for numeric values, calculate rather than hardcode
     const inventoryButton = this.add
       .sprite(
@@ -153,14 +158,13 @@ export default class GameScene extends Scene {
     let keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
     let keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
 
-    if (this.items.length !== 6) {
-      if(this.items.length > 0) console.log(13 * this.items.length - 1);
+    if (this.items.length !== this.player?.inventory?.fish.length) {
+      // TODO: Store positions in array and have value to check whether it is empty or not
       let yCalc = this.items.length < 3 ? inventory.y - 7 : inventory.y + 7;
-      let xCalc = this.items.length > 0 && this.items.length !== 3 ? (inventory.x + (13 * (this.items.length - (this.items.length > 3 ? 4 : 1)))) : inventory.x - 13;
-        
+      let xCalc = determineItemPositionX(this.items.length, 3, 13, inventory.x);  
       this.items.push(
         this.add
-          .sprite(xCalc, yCalc, 'fish-inv')
+          .sprite(xCalc, yCalc, determineFishItem(this.player?.inventory?.fish[this.items.length]!))
           .setScrollFactor(0)
           .setVisible(false).setInteractive(),
       );
@@ -168,9 +172,12 @@ export default class GameScene extends Scene {
       this.items.forEach((item: GameObjects.Sprite) => {
         item.on('pointerover', () => {
           item.setTint(0xcccccc);
+          this.itemText!.setVisible(true);
         });
         item.on('pointerout', () => {
           item.clearTint();
+          this.itemText!.setVisible(false);
+
         });
         item.on('pointerdown', () => {
           console.log('clicked');
