@@ -6,8 +6,10 @@ export default class BootScene extends Scene {
     super({ key: 'Boot' });
   }
   preload() {
-    // character
+    // characters
     this.load.aseprite({ key: 'blu', textureURL: '/assets/blu.png', atlasURL: '/assets/blu.json' });
+    this.load.aseprite({ key: 'fisherman', textureURL: '/assets/fisherman.png', atlasURL: '/assets/fisherman.json' });
+
 
     // buttons
     this.load.image('inventory-button', '/assets/inventory-button.png');
@@ -45,6 +47,7 @@ export default class BootScene extends Scene {
   create() {
     this.anims.createFromAseprite('blu');
     this.anims.createFromAseprite('yellow-star');
+    this.anims.createFromAseprite('fisherman');
     this.scene.start('Game');
   }
 }

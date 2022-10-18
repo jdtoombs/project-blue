@@ -1,9 +1,13 @@
 import { Scene, Physics, GameObjects } from 'phaser';
-import { text } from 'stream/consumers';
 import { Rarity } from '../constants';
 import PlayerController from '../controllers/PlayerController';
 import { ICustomPlayerSprite, IFish } from '../interfaces';
-import { determineFish, determineFishDifficulty, determineFishItem, determineItemPositionX } from '../utils';
+import {
+  determineFish,
+  determineFishDifficulty,
+  determineFishItem,
+  determineItemPositionX,
+} from '../utils';
 
 let dir: number;
 let inventory: any;
@@ -11,6 +15,7 @@ let inventory: any;
 export default class GameScene extends Scene {
   playerController!: PlayerController;
   player?: ICustomPlayerSprite;
+  fishermanNpc?: Physics.Arcade.Sprite;
   rod?: Physics.Arcade.Sprite;
   slider?: Physics.Arcade.Sprite;
   greenSlider?: Physics.Arcade.Sprite;
@@ -45,6 +50,14 @@ export default class GameScene extends Scene {
     const platform = map.createLayer('Ground', tileset);
     map.createLayer('Background', tileset);
 
+    const inventoryPressed = () => {
+      !inventory.visible ? inventoryButton.setTint(0xcccccc) : inventoryButton.clearTint();
+      inventory.setVisible(!inventory.visible);
+      this.items.forEach((item: GameObjects.Sprite) => {
+        item.setVisible(!item.visible);
+      });
+    };
+
     // generate random night sky
     for (let i = 0; i < numberOfWhiteStars; i++) {
       this.physics.add
@@ -77,9 +90,16 @@ export default class GameScene extends Scene {
       coins: 0,
     };
 
+    this.fishermanNpc = this.physics.add.sprite(180, 600, 'fisherman');
+    this.fishermanNpc.setSize(13, 22).setOffset(10);
+    this.fishermanNpc.setBounce(0.2);
+    this.fishermanNpc.setCollideWorldBounds(true);
+    this.fishermanNpc.anims.play({ key: 'man-idle', repeat: -1 });
+
     // keyboard events
     this.input.keyboard.on('keydown-F', this.fishing, this);
     this.input.keyboard.on('keydown-E', this.store, this);
+    this.input.keyboard.on('keydown-R', this.release, this);
 
     this.actionMessage = this.add.text(220, 500, '', {
       font: '"Press Start 2P"',
@@ -98,13 +118,18 @@ export default class GameScene extends Scene {
     this.cameras.main.startFollow(this.player);
     this.cameras.main.zoom = 4;
 
+    // Inventory
     inventory = this.add
       .sprite(this.cameras.main.centerX, this.cameras.main.centerY - 10, 'inventory')
       .setScrollFactor(0);
     inventory.visible = false;
 
-    this.itemText = this.add.text(inventory.x - 26, inventory.y, "click and drag me", { font: "65px Arial" });
+    this.input.keyboard.on('keydown-I', () => inventoryPressed());
 
+    this.itemText = this.add
+      .text(inventory.x - 120, inventory.y, ``, { font: '"Press Start 2P"', fontSize: '8px' })
+      .setScrollFactor(0);
+    this.itemText.x = Math.round(this.itemText.x);
 
     // make constants for numeric values, calculate rather than hardcode
     const inventoryButton = this.add
@@ -138,15 +163,12 @@ export default class GameScene extends Scene {
       inventoryButton.clearTint();
     });
     inventoryButton.on('pointerdown', () => {
-      inventory.setVisible(!inventory.visible);
-      this.items.forEach((item: GameObjects.Sprite) => { 
-        item.setVisible(!item.visible);
-      });
-      console.log(this.items.length);
+      inventoryPressed();
     });
 
     this.physics.add.collider(this.player, platform);
     this.physics.add.collider(this.rod, platform);
+    this.physics.add.collider(this.fishermanNpc, platform);
     platform.setCollisionBetween(0, 15);
 
     this.physics.add.overlap(this.player, this.rod, this.collectRod);
@@ -161,26 +183,35 @@ export default class GameScene extends Scene {
     if (this.items.length !== this.player?.inventory?.fish.length) {
       // TODO: Store positions in array and have value to check whether it is empty or not
       let yCalc = this.items.length < 3 ? inventory.y - 7 : inventory.y + 7;
-      let xCalc = determineItemPositionX(this.items.length, 3, 13, inventory.x);  
+      let xCalc = determineItemPositionX(this.items.length, 3, 13, inventory.x);
       this.items.push(
         this.add
           .sprite(xCalc, yCalc, determineFishItem(this.player?.inventory?.fish[this.items.length]!))
           .setScrollFactor(0)
-          .setVisible(false).setInteractive(),
+          .setVisible(false)
+          .setInteractive(),
       );
 
-      this.items.forEach((item: GameObjects.Sprite) => {
+      this.items.forEach((item: GameObjects.Sprite, index: number) => {
         item.on('pointerover', () => {
           item.setTint(0xcccccc);
-          this.itemText!.setVisible(true);
+          this.itemText!.setText(
+            `Rarity: ${this.player?.inventory?.fish[index]?.rarity} \nWeight: ${this.player?.inventory?.fish[index]?.weight}`,
+          );
         });
         item.on('pointerout', () => {
           item.clearTint();
-          this.itemText!.setVisible(false);
-
+          this.itemText!.setText('');
         });
-        item.on('pointerdown', () => {
-          console.log('clicked');
+        item.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+          if (pointer.rightButtonDown()) {
+            this.items.splice(index, 1);
+            this.player?.inventory?.fish.splice(index, 1);
+            this.itemText!.setText('');
+            item.destroy();
+          } else {
+            console.log('clicked');
+          }
         });
       });
     }
@@ -295,6 +326,13 @@ export default class GameScene extends Scene {
       this.actionMessage.setText('');
       this.player!.playerObjectState!.fishCaught = false;
       console.log(this.player!.inventory!.fish);
+    }
+  };
+
+  release = () => {
+    if (this.player!.playerObjectState!.fishCaught) {
+      this.actionMessage.setText('');
+      this.player!.playerObjectState!.fishCaught = false;
     }
   };
 
