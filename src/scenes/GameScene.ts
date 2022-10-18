@@ -91,7 +91,7 @@ export default class GameScene extends Scene {
     };
 
     this.fishermanNpc = this.physics.add.sprite(180, 600, 'fisherman');
-    this.fishermanNpc.setSize(13, 22).setOffset(10);
+    this.fishermanNpc.setSize(30, 22).setOffset(10);
     this.fishermanNpc.setBounce(0.2);
     this.fishermanNpc.setCollideWorldBounds(true);
     this.fishermanNpc.anims.play({ key: 'man-idle', repeat: -1 });
