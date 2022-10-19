@@ -1,7 +1,7 @@
 import { Scene, Physics, GameObjects } from 'phaser';
 import { Rarity } from '../constants';
 import PlayerController from '../controllers/PlayerController';
-import { ICustomPlayerSprite, IFish } from '../interfaces';
+import { ICustomPlayerSprite, IFish, IGridSquare } from '../interfaces';
 import {
   determineFish,
   determineFishDifficulty,
@@ -11,6 +11,7 @@ import {
 
 let dir: number;
 let inventory: any;
+let INVENTORY_SIZE: number = 6;
 
 export default class GameScene extends Scene {
   playerController!: PlayerController;
@@ -23,8 +24,8 @@ export default class GameScene extends Scene {
 
   currentFish?: IFish;
 
-  items: GameObjects.Sprite[] = [];
   itemText?: GameObjects.Text;
+  inventoryGrid?: IGridSquare[] = [];
 
   count?: number = 50;
 
@@ -53,8 +54,8 @@ export default class GameScene extends Scene {
     const inventoryPressed = () => {
       !inventory.visible ? inventoryButton.setTint(0xcccccc) : inventoryButton.clearTint();
       inventory.setVisible(!inventory.visible);
-      this.items.forEach((item: GameObjects.Sprite) => {
-        item.setVisible(!item.visible);
+      this.inventoryGrid!.forEach((square: IGridSquare) => {
+        if(!square.isOpen) square.item!.setVisible(!square.item!.visible);
       });
     };
 
@@ -94,7 +95,7 @@ export default class GameScene extends Scene {
     this.fishermanNpc.setSize(30, 22).setOffset(10);
     this.fishermanNpc.setBounce(0.2);
     this.fishermanNpc.setCollideWorldBounds(true);
-    this.fishermanNpc.anims.play({ key: 'man-idle', repeat: -1 });
+    // this.fishermanNpc.anims.play({ key: 'man-idle', repeat: -1 });
 
     // keyboard events
     this.input.keyboard.on('keydown-F', this.fishing, this);
@@ -130,6 +131,16 @@ export default class GameScene extends Scene {
       .text(inventory.x - 120, inventory.y, ``, { font: '"Press Start 2P"', fontSize: '8px' })
       .setScrollFactor(0);
     this.itemText.x = Math.round(this.itemText.x);
+
+    for (let i = 0; i < INVENTORY_SIZE; i++) {
+      this.inventoryGrid?.push({
+        x: determineItemPositionX(i, 3, 13, inventory.x),
+        y: i < 3 ? inventory.y - 7 : inventory.y + 7,
+        isOpen: true,
+        item: undefined,
+        itemDetails: undefined,
+      });
+    }
 
     // make constants for numeric values, calculate rather than hardcode
     const inventoryButton = this.add
@@ -179,40 +190,51 @@ export default class GameScene extends Scene {
     let keyA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
     let keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
     let keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
-
-    if (this.items.length !== this.player?.inventory?.fish.length) {
-      // TODO: Store positions in array and have value to check whether it is empty or not
-      let yCalc = this.items.length < 3 ? inventory.y - 7 : inventory.y + 7;
-      let xCalc = determineItemPositionX(this.items.length, 3, 13, inventory.x);
-      this.items.push(
-        this.add
-          .sprite(xCalc, yCalc, determineFishItem(this.player?.inventory?.fish[this.items.length]!))
-          .setScrollFactor(0)
-          .setVisible(false)
+    
+    let itemCount = this.inventoryGrid!.filter((square) => square.isOpen === false).length;
+    console.log(this.inventoryGrid);
+    console.log(itemCount, this.player?.inventory?.fish.length, 'outside');
+    if (itemCount !== this.player?.inventory?.fish.length ) {
+      // find first open slot in inventory
+      let openSlot = this.inventoryGrid!.findIndex((square: IGridSquare) => square.isOpen === true);
+      this.inventoryGrid![openSlot] = {
+        ...this.inventoryGrid![openSlot],
+        isOpen: false,
+        item: this.add.sprite(this.inventoryGrid![openSlot].x, this.inventoryGrid![openSlot].y, determineFishItem(this.player?.inventory?.fish[this.player.inventory.fish.length - 1]!))
+        .setScrollFactor(0)
+        .setVisible(false)
           .setInteractive(),
-      );
+        itemDetails: this.player?.inventory?.fish[this.player.inventory.fish.length - 1],
+      }
 
-      this.items.forEach((item: GameObjects.Sprite, index: number) => {
-        item.on('pointerover', () => {
-          item.setTint(0xcccccc);
-          this.itemText!.setText(
-            `Rarity: ${this.player?.inventory?.fish[index]?.rarity} \nWeight: ${this.player?.inventory?.fish[index]?.weight}`,
-          );
-        });
-        item.on('pointerout', () => {
-          item.clearTint();
-          this.itemText!.setText('');
-        });
-        item.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
-          if (pointer.rightButtonDown()) {
-            this.items.splice(index, 1);
-            this.player?.inventory?.fish.splice(index, 1);
+      this.inventoryGrid!.forEach((square: IGridSquare, index: number) => {
+        if (square.isOpen === false) {
+          square.item!.on('pointerover', () => {
+            square.item!.setTint(0xcccccc);
+            this.itemText!.setText(
+              `Rarity: ${this.player?.inventory?.fish[index]?.rarity} \nWeight: ${this.player?.inventory?.fish[index]?.weight}`,
+            );
+          });
+          square.item!.on('pointerout', () => {
+            square.item!.clearTint();
             this.itemText!.setText('');
-            item.destroy();
-          } else {
-            console.log('clicked');
-          }
-        });
+          });
+          square.item!.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+            if (pointer.rightButtonDown()) {
+              this.player?.inventory?.fish?.splice(this.player.inventory.fish.findIndex((fish) => fish.id === square.itemDetails?.id), 1);
+              this.itemText!.setText('');
+              this.inventoryGrid![index] = {
+                ...square,
+                isOpen: true,
+                itemDetails: undefined,
+              };
+              square.item?.destroy();
+              console.log(this.player?.inventory?.fish.length, itemCount, 'here!');
+            } else {
+              console.log('clicked');
+            }
+          });
+        }
       });
     }
 
@@ -275,6 +297,8 @@ export default class GameScene extends Scene {
         this.fishingBarReset();
       }
     }
+
+    this.sellToFisherman();
 
     /** Control State */
     if (keyA.isDown) {
@@ -413,6 +437,14 @@ export default class GameScene extends Scene {
         this.count = this.count! - 1;
         console.log(this.count);
       }
+    }
+  };
+
+  sellToFisherman = () => {
+    if (this.player!.x > this.fishermanNpc!.x && this.player!.x < this.fishermanNpc!.x + 30) {
+      this.fishermanNpc!.anims.play('sell', true);
+    } else {
+      this.fishermanNpc!.anims.play('man-idle', true);
     }
   };
 }
