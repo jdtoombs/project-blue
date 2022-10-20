@@ -9,9 +9,11 @@ import {
   determineItemPositionX,
 } from '../utils';
 
+// TODO: move these
 let dir: number;
 let inventory: any;
 let INVENTORY_SIZE: number = 6;
+let latestFishId: string = '';
 
 export default class GameScene extends Scene {
   playerController!: PlayerController;
@@ -55,7 +57,7 @@ export default class GameScene extends Scene {
       !inventory.visible ? inventoryButton.setTint(0xcccccc) : inventoryButton.clearTint();
       inventory.setVisible(!inventory.visible);
       this.inventoryGrid!.forEach((square: IGridSquare) => {
-        if(!square.isOpen) square.item!.setVisible(!square.item!.visible);
+        if (!square.isOpen) square.item!.setVisible(!square.item!.visible);
       });
     };
 
@@ -190,21 +192,32 @@ export default class GameScene extends Scene {
     let keyA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
     let keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
     let keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
-    
-    let itemCount = this.inventoryGrid!.filter((square) => square.isOpen === false).length;
-    console.log(this.inventoryGrid);
-    console.log(itemCount, this.player?.inventory?.fish.length, 'outside');
-    if (itemCount !== this.player?.inventory?.fish.length ) {
+
+    if (!!this.player!.inventory!.fish[this.player!.inventory!.fish.length - 1] && this.player!.inventory!.fish[this.player!.inventory!.fish.length - 1].id !== latestFishId) {
+      latestFishId = this.player!.inventory!.fish[this.player!.inventory!.fish.length - 1].id
+    }
+      
+    if (this.inventoryGrid!.findIndex((square) => square.itemDetails?.id === latestFishId) === -1 && this.player!.inventory!.fish.length > 0) {
       // find first open slot in inventory
+      latestFishId = this.player!.inventory!.fish[this.player!.inventory!.fish.length - 1].id;
       let openSlot = this.inventoryGrid!.findIndex((square: IGridSquare) => square.isOpen === true);
-      this.inventoryGrid![openSlot] = {
-        ...this.inventoryGrid![openSlot],
-        isOpen: false,
-        item: this.add.sprite(this.inventoryGrid![openSlot].x, this.inventoryGrid![openSlot].y, determineFishItem(this.player?.inventory?.fish[this.player.inventory.fish.length - 1]!))
-        .setScrollFactor(0)
-        .setVisible(false)
-          .setInteractive(),
-        itemDetails: this.player?.inventory?.fish[this.player.inventory.fish.length - 1],
+      if (openSlot !== -1) {
+        this.inventoryGrid![openSlot] = {
+          ...this.inventoryGrid![openSlot],
+          isOpen: false,
+          item: this.add
+            .sprite(
+              this.inventoryGrid![openSlot].x,
+              this.inventoryGrid![openSlot].y,
+              determineFishItem(
+                this.player?.inventory?.fish[this.player.inventory.fish.length - 1]!,
+              ),
+            )
+            .setScrollFactor(0)
+            .setVisible(false)
+            .setInteractive(),
+          itemDetails: this.player?.inventory?.fish[this.player.inventory.fish.length - 1],
+        };
       }
 
       this.inventoryGrid!.forEach((square: IGridSquare, index: number) => {
@@ -212,7 +225,7 @@ export default class GameScene extends Scene {
           square.item!.on('pointerover', () => {
             square.item!.setTint(0xcccccc);
             this.itemText!.setText(
-              `Rarity: ${this.player?.inventory?.fish[index]?.rarity} \nWeight: ${this.player?.inventory?.fish[index]?.weight}`,
+              `Rarity: ${square.itemDetails?.rarity} \nWeight: ${square.itemDetails?.weight}`,
             );
           });
           square.item!.on('pointerout', () => {
@@ -221,7 +234,10 @@ export default class GameScene extends Scene {
           });
           square.item!.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
             if (pointer.rightButtonDown()) {
-              this.player?.inventory?.fish?.splice(this.player.inventory.fish.findIndex((fish) => fish.id === square.itemDetails?.id), 1);
+              this.player?.inventory?.fish?.splice(
+                this.player.inventory.fish.findIndex((fish) => fish.id === square.itemDetails?.id),
+                1,
+              );
               this.itemText!.setText('');
               this.inventoryGrid![index] = {
                 ...square,
@@ -229,9 +245,6 @@ export default class GameScene extends Scene {
                 itemDetails: undefined,
               };
               square.item?.destroy();
-              console.log(this.player?.inventory?.fish.length, itemCount, 'here!');
-            } else {
-              console.log('clicked');
             }
           });
         }
@@ -349,7 +362,6 @@ export default class GameScene extends Scene {
       this.player!.inventory!.fish.push(this.currentFish!);
       this.actionMessage.setText('');
       this.player!.playerObjectState!.fishCaught = false;
-      console.log(this.player!.inventory!.fish);
     }
   };
 
@@ -435,7 +447,6 @@ export default class GameScene extends Scene {
     if (this.player?.playerObjectState?.reeling) {
       if (this.slider!.x <= this.greenSlider!.x - 7 || this.slider!.x >= this.greenSlider!.x + 7) {
         this.count = this.count! - 1;
-        console.log(this.count);
       }
     }
   };
