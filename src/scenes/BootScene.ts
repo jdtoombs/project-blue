@@ -11,11 +11,12 @@ export default class BootScene extends Scene {
     this.load.aseprite({ key: 'fisherman', textureURL: '/assets/fisherman.png', atlasURL: '/assets/fisherman.json' });
 
 
-    // buttons
+    // buttons / ui
     this.load.image('inventory-button', '/assets/inventory-button.png');
     this.load.image('character-button', '/assets/character-button.png');
     this.load.image('caught-button', '/assets/caught-button.png');
     this.load.image('inventory', '/assets/inventory.png');
+    this.load.image('coin-count', '/assets/coin-count.png');
     
     // items
     this.load.image('rod-1', '/assets/rod-1.png');

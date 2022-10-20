@@ -6,6 +6,7 @@ import {
   determineFish,
   determineFishDifficulty,
   determineFishItem,
+  determineFishPrice,
   determineItemPositionX,
 } from '../utils';
 
@@ -27,7 +28,9 @@ export default class GameScene extends Scene {
   currentFish?: IFish;
 
   itemText?: GameObjects.Text;
+  coinText?: GameObjects.Text;
   inventoryGrid?: IGridSquare[] = [];
+  canSell?: boolean = false;
 
   count?: number = 50;
 
@@ -120,6 +123,13 @@ export default class GameScene extends Scene {
     this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
     this.cameras.main.startFollow(this.player);
     this.cameras.main.zoom = 4;
+
+    // coin count
+    let coinCount = this.add.sprite(this.cameras.main.centerX - 110, this.cameras.main.centerY - 75, 'coin-count').setScrollFactor(0).setScale(0.75);
+    this.coinText = this.add
+    .text(coinCount.x - 2, coinCount.y - 3.5, `0.000`, { font: '"Press Start 2P"', fontSize: '12px' })
+    .setScrollFactor(0).setScale(0.50);
+
 
     // Inventory
     inventory = this.add
@@ -233,12 +243,15 @@ export default class GameScene extends Scene {
             this.itemText!.setText('');
           });
           square.item!.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
-            if (pointer.rightButtonDown()) {
+            // can add destroy option here later if needed (left button down)
+            if (pointer.rightButtonDown() && this.canSell) {
               this.player?.inventory?.fish?.splice(
                 this.player.inventory.fish.findIndex((fish) => fish.id === square.itemDetails?.id),
                 1,
               );
               this.itemText!.setText('');
+              this.player!.inventory!.coins += determineFishPrice(square.itemDetails!);
+              this.coinText!.setText(String(this.player?.inventory?.coins));
               this.inventoryGrid![index] = {
                 ...square,
                 isOpen: true,
@@ -454,8 +467,10 @@ export default class GameScene extends Scene {
   sellToFisherman = () => {
     if (this.player!.x > this.fishermanNpc!.x && this.player!.x < this.fishermanNpc!.x + 30) {
       this.fishermanNpc!.anims.play('sell', true);
+      this.canSell = true;
     } else {
       this.fishermanNpc!.anims.play('man-idle', true);
+      this.canSell = false;
     }
   };
 }
