@@ -27,6 +27,10 @@ export default class GameScene extends Scene {
 
   currentFish?: IFish;
 
+  // store
+  itemStore?: GameObjects.Sprite;
+  itemsForSale?: GameObjects.Sprite[];
+
   itemText?: GameObjects.Text;
   coinText?: GameObjects.Text;
   inventoryGrid?: IGridSquare[] = [];
@@ -125,17 +129,48 @@ export default class GameScene extends Scene {
     this.cameras.main.zoom = 4;
 
     // coin count
-    let coinCount = this.add.sprite(this.cameras.main.centerX - 110, this.cameras.main.centerY - 75, 'coin-count').setScrollFactor(0).setScale(0.75);
+    let coinCount = this.add
+      .sprite(this.cameras.main.centerX - 110, this.cameras.main.centerY - 75, 'coin-count')
+      .setScrollFactor(0)
+      .setScale(0.75);
     this.coinText = this.add
-    .text(coinCount.x - 2, coinCount.y - 3.5, `0.000`, { font: '"Press Start 2P"', fontSize: '12px' })
-    .setScrollFactor(0).setScale(0.50);
-
+      .text(coinCount.x - 2, coinCount.y - 3.5, `0.000`, {
+        font: '"Press Start 2P"',
+        fontSize: '12px',
+      })
+      .setScrollFactor(0)
+      .setScale(0.5);
 
     // Inventory
     inventory = this.add
       .sprite(this.cameras.main.centerX, this.cameras.main.centerY - 10, 'inventory')
       .setScrollFactor(0);
     inventory.visible = false;
+
+    // store setup
+    this.itemStore = this.add
+      .sprite(this.fishermanNpc.x - 30, this.fishermanNpc.y - 30, 'store')
+      .setVisible(false);
+    this.itemsForSale = [
+      this.add
+        .sprite(this.itemStore.x, this.itemStore.y - 14, 'lure-1')
+        .setVisible(false)
+        .setScale(0.25),
+      this.add
+        .sprite(this.itemStore.x, this.itemStore.y, 'magic-stick')
+        .setVisible(false)
+        .setScale(0.25),
+      this.add
+        .sprite(this.itemStore.x, this.itemStore.y + 14, 'running-shoes')
+        .setVisible(false)
+        .setScale(0.25),
+    ];
+
+    this.itemsForSale.forEach((item: GameObjects.Sprite) => {
+      item.on('pointerover', () => {
+        item.setTint(0xcccccc);
+      });
+    });
 
     this.input.keyboard.on('keydown-I', () => inventoryPressed());
 
@@ -203,11 +238,17 @@ export default class GameScene extends Scene {
     let keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
     let keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
 
-    if (!!this.player!.inventory!.fish[this.player!.inventory!.fish.length - 1] && this.player!.inventory!.fish[this.player!.inventory!.fish.length - 1].id !== latestFishId) {
-      latestFishId = this.player!.inventory!.fish[this.player!.inventory!.fish.length - 1].id
+    if (
+      !!this.player!.inventory!.fish[this.player!.inventory!.fish.length - 1] &&
+      this.player!.inventory!.fish[this.player!.inventory!.fish.length - 1].id !== latestFishId
+    ) {
+      latestFishId = this.player!.inventory!.fish[this.player!.inventory!.fish.length - 1].id;
     }
-      
-    if (this.inventoryGrid!.findIndex((square) => square.itemDetails?.id === latestFishId) === -1 && this.player!.inventory!.fish.length > 0) {
+
+    if (
+      this.inventoryGrid!.findIndex((square) => square.itemDetails?.id === latestFishId) === -1 &&
+      this.player!.inventory!.fish.length > 0
+    ) {
       // find first open slot in inventory
       latestFishId = this.player!.inventory!.fish[this.player!.inventory!.fish.length - 1].id;
       let openSlot = this.inventoryGrid!.findIndex((square: IGridSquare) => square.isOpen === true);
@@ -467,9 +508,17 @@ export default class GameScene extends Scene {
   sellToFisherman = () => {
     if (this.player!.x > this.fishermanNpc!.x && this.player!.x < this.fishermanNpc!.x + 30) {
       this.fishermanNpc!.anims.play('sell', true);
+      this.itemStore?.setVisible(true);
+      this.itemsForSale?.forEach((item) => {
+        item.setVisible(true);
+      });
       this.canSell = true;
     } else {
       this.fishermanNpc!.anims.play('man-idle', true);
+      this.itemStore?.setVisible(false);
+      this.itemsForSale?.forEach((item) => {
+        item.setVisible(false);
+      });
       this.canSell = false;
     }
   };

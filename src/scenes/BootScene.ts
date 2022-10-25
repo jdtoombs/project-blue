@@ -25,6 +25,14 @@ export default class BootScene extends Scene {
     this.load.image(FishItems.UncommonFish, '/assets/uncommon-fish-inv.png');
     this.load.image(FishItems.RareFish, '/assets/rare-fish-inv.png');
     this.load.image(FishItems.LegendaryFish, '/assets/legendary-fish-inv.png');
+
+    //store items
+    this.load.image('store', '/assets/store.png');
+    this.load.image('coin', '/assets/coin.png');
+    this.load.image('lure-1', '/assets/lure-1.png');
+    this.load.image('magic-stick', '/assets/magic-stick.png');
+    this.load.image('running-shoes', '/assets/running-shoes.png');
+    this.load.image('bag-of-coins', '/assets/bag-of-coins.png');
     
     // sky assets
     this.load.image('stars', '/assets/stars.png');
