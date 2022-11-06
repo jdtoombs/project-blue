@@ -8,8 +8,11 @@ export default class BootScene extends Scene {
   preload() {
     // characters
     this.load.aseprite({ key: 'blu', textureURL: '/assets/blu.png', atlasURL: '/assets/blu.json' });
-    this.load.aseprite({ key: 'fisherman', textureURL: '/assets/fisherman.png', atlasURL: '/assets/fisherman.json' });
-
+    this.load.aseprite({
+      key: 'fisherman',
+      textureURL: '/assets/fisherman.png',
+      atlasURL: '/assets/fisherman.json',
+    });
 
     // buttons / ui
     this.load.image('inventory-button', '/assets/inventory-button.png');
@@ -17,7 +20,7 @@ export default class BootScene extends Scene {
     this.load.image('caught-button', '/assets/caught-button.png');
     this.load.image('inventory', '/assets/inventory.png');
     this.load.image('coin-count', '/assets/coin-count.png');
-    
+
     // items
     this.load.image('rod-1', '/assets/rod-1.png');
     this.load.image('fish-inv', '/assets/fish-inv.png');
@@ -32,8 +35,15 @@ export default class BootScene extends Scene {
     this.load.image('lure-1', '/assets/lure-1.png');
     this.load.image('magic-stick', '/assets/magic-stick.png');
     this.load.image('running-shoes', '/assets/running-shoes.png');
-    this.load.image('bag-of-coins', '/assets/bag-of-coins.png');
-    
+    this.load.image('buy-button', '/assets/buy-button.png');
+    // item container for store
+
+    this.load.image('item-container', '/assets/item-container.png');
+    //store buttons
+    this.load.image('lure-1-button', '/assets/lure-1-button.png');
+    this.load.image('magic-stick-button', '/assets/magic-stick-button.png');
+    this.load.image('running-shoes-button', '/assets/running-shoes-button.png');
+
     // sky assets
     this.load.image('stars', '/assets/stars.png');
     this.load.image('white-star', '/assets/white-star.png');
@@ -42,7 +52,7 @@ export default class BootScene extends Scene {
       textureURL: '/assets/yellow-star.png',
       atlasURL: '/assets/yellow-star.json',
     });
-    
+
     // fishing mechanic assets
     this.load.image('fishing-bar', '/assets/fishing-bar.png');
     this.load.image('slider', '/assets/slider.png');

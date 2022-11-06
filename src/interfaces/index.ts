@@ -4,3 +4,4 @@ export * from './IFish';
 export * from './IInventory';
 export * from './FishItems';
 export * from './IGridSquare';
+export * from './IStoreItem';

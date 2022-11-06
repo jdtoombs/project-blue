@@ -1,7 +1,7 @@
 import { Scene, Physics, GameObjects } from 'phaser';
 import { Rarity } from '../constants';
 import PlayerController from '../controllers/PlayerController';
-import { ICustomPlayerSprite, IFish, IGridSquare } from '../interfaces';
+import { ICustomPlayerSprite, IFish, IGridSquare, IStoreItem } from '../interfaces';
 import {
   determineFish,
   determineFishDifficulty,
@@ -15,6 +15,7 @@ let dir: number;
 let inventory: any;
 let INVENTORY_SIZE: number = 6;
 let latestFishId: string = '';
+let currentItem: IStoreItem;
 
 export default class GameScene extends Scene {
   playerController!: PlayerController;
@@ -29,9 +30,12 @@ export default class GameScene extends Scene {
 
   // store
   itemStore?: GameObjects.Sprite;
-  itemsForSale?: GameObjects.Sprite[];
+  itemsForSale?: IStoreItem[];
+  itemContainer?: GameObjects.Sprite;
+  buyButton?: GameObjects.Sprite;
 
   itemText?: GameObjects.Text;
+  storeText?: GameObjects.Text;
   coinText?: GameObjects.Text;
   inventoryGrid?: IGridSquare[] = [];
   canSell?: boolean = false;
@@ -149,26 +153,71 @@ export default class GameScene extends Scene {
 
     // store setup
     this.itemStore = this.add
-      .sprite(this.fishermanNpc.x - 30, this.fishermanNpc.y - 30, 'store')
+      .sprite(this.fishermanNpc.x - 35, this.fishermanNpc.y - 45, 'store')
       .setVisible(false);
-    this.itemsForSale = [
-      this.add
-        .sprite(this.itemStore.x, this.itemStore.y - 14, 'lure-1')
-        .setVisible(false)
-        .setScale(0.25),
-      this.add
-        .sprite(this.itemStore.x, this.itemStore.y, 'magic-stick')
-        .setVisible(false)
-        .setScale(0.25),
-      this.add
-        .sprite(this.itemStore.x, this.itemStore.y + 14, 'running-shoes')
-        .setVisible(false)
-        .setScale(0.25),
-    ];
 
-    this.itemsForSale.forEach((item: GameObjects.Sprite) => {
-      item.on('pointerover', () => {
-        item.setTint(0xcccccc);
+    this.itemContainer = this.add
+      .sprite(this.itemStore.x + 40, this.itemStore.y, 'item-container')
+      .setVisible(false);
+
+    this.buyButton = this.add
+      .sprite(this.itemContainer.x + 13, this.itemContainer.y + 18, 'buy-button')
+      .setVisible(false)
+      .setScale(0.4)
+      .setInteractive();
+
+    this.storeText = this.add
+      .text(this.itemContainer.x - 18, this.itemContainer.y - 20, ``, {
+        font: '"Press Start 2P"',
+        fontSize: '14px',
+      })
+      .setScale(0.25);
+
+    this.itemsForSale = [
+      {
+        name: 'Lure',
+        price: 200,
+        description: 'Increase luck by 20%\nAllow possibility of catching\nmythical fish\nLasts 60 mins',
+        button: this.add
+          .sprite(this.itemStore.x, this.itemStore.y - 14, 'lure-1-button')
+          .setVisible(false)
+          .setScale(0.3)
+          .setInteractive(),
+      },
+      {
+        name: 'Magic Stick',
+        price: 10000,
+        description: 'Cast your line further\nChance of catching bigger fish\nAllow possibility of catching\nmythical fish',
+        button: this.add
+          .sprite(this.itemStore.x, this.itemStore.y, 'magic-stick-button')
+          .setVisible(false)
+          .setScale(0.3)
+          .setInteractive(),
+      },
+      {
+        name: 'Running Shoes',
+        description: 'Increase speed by 25%',
+        price: 1000,
+        button: this.add
+          .sprite(this.itemStore.x, this.itemStore.y + 14, 'running-shoes-button')
+          .setVisible(false)
+          .setScale(0.3)
+          .setInteractive(),
+      },
+    ];
+    // let itemContainer
+    this.itemsForSale.forEach((item, index) => {
+      item.button.on('pointerover', () => {
+        item.button.setTint(0xcccccc);
+      });
+      item.button.on('pointerout', () => {
+        item.button.clearTint();
+      });
+      item.button.on('pointerdown', () => {
+        this.itemContainer?.setVisible(true);
+        this.buyButton?.setVisible(true);
+        this.storeText?.setText(`${item.name}\nPrice: ${item.price} coins\n${item.description}`);
+        console.log('clicked');
       });
     });
 
@@ -510,15 +559,18 @@ export default class GameScene extends Scene {
       this.fishermanNpc!.anims.play('sell', true);
       this.itemStore?.setVisible(true);
       this.itemsForSale?.forEach((item) => {
-        item.setVisible(true);
+        item.button.setVisible(true);
       });
       this.canSell = true;
     } else {
       this.fishermanNpc!.anims.play('man-idle', true);
       this.itemStore?.setVisible(false);
+      this.itemContainer?.setVisible(false);
       this.itemsForSale?.forEach((item) => {
-        item.setVisible(false);
+        item.button.setVisible(false);
       });
+      this.storeText?.setText('');
+      this.buyButton?.setVisible(false);
       this.canSell = false;
     }
   };
